@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Casio Engineering Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #ffffff, #f4f4f4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .wrapper {
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+      color: #2c3e50;
+      letter-spacing: 1px;
+    }
+
+    .calculator {
+      background: #ffffff;
+      border-radius: 15px;
+      padding: 20px;
+      width: 560px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .display {
+      background: #ecf0f1;
+      padding: 15px;
+      border-radius: 10px;
+      color: #2c3e50;
+      text-align: right;
+      margin-bottom: 15px;
+      min-height: 70px;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #expression {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      min-height: 20px;
+      word-wrap: break-word;
+    }
+
+    #result {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #2c3e50;
+      word-wrap: break-word;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 14px;
+      background: #dfe6e9;
+      color: #2c3e50;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #b2bec3;
+    }
+
+    button.equal {
+      background: linear-gradient(to right, #f39c12, #e67e22);
+      color: white;
+      font-weight: bold;
+    }
+
+    button.equal:hover {
+      filter: brightness(1.1);
+    }
+
+    button.light {
+      background: #bdc3c7;
+      color: #2c3e50;
+    }
+
+    button.danger {
+      background: #e74c3c;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>Casio Engineering Calculator</h1>
+    <div class="calculator">
+      <div class="display">
+        <div id="expression">0</div>
+        <div id="result">0</div>
+      </div>
+      <div class="buttons">
+        <button class="light">CE</button>
+        <button class="danger">C</button>
+        <button>⌫</button>
+        <button>÷</button>
+        <button>inv</button>
+        <button>Rad</button>
+        <button>Sin</button>
+
+        <button>7</button>
+        <button>8</button>
+        <button>9</button>
+        <button>×</button>
+        <button>Cos</button>
+        <button>Tan</button>
+        <button>%</button>
+
+        <button>4</button>
+        <button>5</button>
+        <button>6</button>
+        <button>−</button>
+        <button>ln</button>
+        <button>log</button>
+        <button>!</button>
+
+        <button>1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>+</button>
+        <button>^</button>
+        <button>π</button>
+        <button>e</button>
+
+        <button>.</button>
+        <button>0</button>
+        <button class="equal">=</button>
+        <button>(</button>
+        <button>)</button>
+        <button>✓</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const expressionDisplay = document.getElementById('expression');
+    const resultDisplay = document.getElementById('result');
+    let expression = '';
+
+    function factorial(n) {
+      if (n < 0) return NaN;
+      if (n === 0 || n === 1) return 1;
+      return n * factorial(n - 1);
+    }
+
+    function safeEval(expr) {
+      try {
+        const parsed = expr
+          .replace(/÷/g, '/')
+          .replace(/×/g, '*')
+          .replace(/−/g, '-')
+          .replace(/π/g, 'Math.PI')
+          .replace(/\be\b/g, 'Math.E')
+          .replace(/Sin/g, 'Math.sin')
+          .replace(/Cos/g, 'Math.cos')
+          .replace(/Tan/g, 'Math.tan')
+          .replace(/log/g, 'Math.log10')
+          .replace(/ln/g, 'Math.log')
+          .replace(/\^/g, '')
+          .replace(/(\d+)!/g, (_, n) => factorial(parseInt(n)));
+
+        if (/[\dπe)]$/.test(expr)) {
+          const result = eval(parsed);
+          return Number.isFinite(result) ? result : '';
+        } else {
+          return '';
+        }
+      } catch {
+        return '';
+      }
+    }
+
+    function updateDisplay() {
+      expressionDisplay.textContent = expression || '0';
+      const result = safeEval(expression);
+      resultDisplay.textContent = result !== '' ? result : '';
+    }
+
+    document.querySelectorAll('button').forEach(button => {
+      const text = button.textContent.trim();
+
+      button.addEventListener('click', () => {
+        if (text === 'CE') {
+          expression = '';
+        } else if (text === 'C' || text === '⌫') {
+          expression = expression.slice(0, -1);
+        } else if (text === '=') {
+          const result = safeEval(expression);
+          expression = result !== '' ? result.toString() : expression;
+        } else if (text === '✓') {
+          // Placeholder
+        } else if (text === 'inv') {
+          expression += '1/(';
+        } else if (['Sin', 'Cos', 'Tan', 'log', 'ln'].includes(text)) {
+          expression += text + '(';
+        } else if (text === '!') {
+          expression += '!';
+        } else if (text === 'Rad') {
+          // Optional
+        } else {
+          expression += text;
+        }
+
+        updateDisplay();
+      });
+    });
+  </script>
+</body>
+</html>
